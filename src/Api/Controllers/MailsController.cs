@@ -35,7 +35,7 @@ namespace Api.Controllers
                command.Body 
             );
 
-            return Created($"/mails/{command.Id}",null);
+            return Created($"/mails/{command.Id}",command.Id);
         }
         
     }

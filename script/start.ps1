@@ -1,2 +1,2 @@
 Write-host 'Staring service...'
-dotnet run  -p ../src/Api
+dotnet run  -p $PSScriptRoot'\..\src\Api'

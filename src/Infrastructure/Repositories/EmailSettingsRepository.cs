@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.Domain.ValueObjects;
 using Core.Repositories;
 
 namespace Infrastructure.Repositories
@@ -16,8 +17,8 @@ namespace Infrastructure.Repositories
         public async Task<EmailSettings> GetAsync(Guid id)
             => await Task.FromResult(_emailSettings.Where(x => x.Id == id).SingleOrDefault());
 
-        public async Task<EmailSettings> GetAsync(string username)
-            => await Task.FromResult(_emailSettings.Where(x => x.Username == username).SingleOrDefault());
+        public async Task<EmailSettings> GetAsync(Email email)
+            => await Task.FromResult(_emailSettings.Where(x => x.Email.ToString() == email.ToString()).SingleOrDefault());
         public async Task<IEnumerable<EmailSettings>> BrowseAsync()
             => await Task.FromResult(_emailSettings.AsEnumerable());
 

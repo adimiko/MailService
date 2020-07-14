@@ -21,7 +21,12 @@ namespace Api.Controllers
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
-            => Json(await _emailSettingsService.GetAsync(id));
+         {
+            var emailSettings = await _emailSettingsService.GetAsync(id);
+            if(emailSettings == null) return NotFound();
+
+            return Json(emailSettings);
+         }
 
         [HttpGet]
         public async Task<IActionResult> Browse()
@@ -31,8 +36,8 @@ namespace Api.Controllers
         public async Task<IActionResult> Post([FromBody] CreateEmailSettings command)
         {
             command.Id = Guid.NewGuid();
-            await _emailSettingsService.CreateAsync(command.Id, command.Host, command.Port, command.Username, command.Password);
-            return Created($"/email-settings/{command.Id}",null);
+            await _emailSettingsService.CreateAsync(command.Id, command.SmtpHost, command.SmtpPort, command.DisplayName, command.Email, command.Password);
+            return Created($"/email-settings/{command.Id}",command.Id);
         }
 
         // PUT: api/EmailSettings/5

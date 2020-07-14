@@ -7,7 +7,6 @@ using Application.Services.Interfaces;
 using Core.Domain.Entities;
 using Core.Repositories;
 using Infrastructure.Mapper;
-using Infrastructure.MimeKit;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
@@ -38,8 +37,7 @@ namespace Api
             services.AddScoped<IEmailSettingsService, EmailSettingsService>();
             services.AddScoped<IMailRepository, MailRepository>();
             services.AddScoped<IEmailSettingsRepository,EmailSettingsRepository>();
-            services.AddSingleton<IMailKitProvider, MailKitProvider>();
-            services.AddSingleton<IMailKitConfig, MailKitConfig>();
+            services.AddScoped<IMailKitProvider, MailKitProvider>();
             services.AddSingleton(AutoMapperConfig.Initialize());
         }
 

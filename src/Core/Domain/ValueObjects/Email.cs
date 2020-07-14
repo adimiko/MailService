@@ -1,11 +1,12 @@
 using System;
+using System.Net.Mail;
 using System.Text.RegularExpressions;
 
 namespace Core.Domain.ValueObjects
 {
     public class Email
     {
-        public string Value {get; protected set;}
+        protected string Value {get;  set;}
         protected Email(){}
         protected Email(string value)
         {
@@ -15,22 +16,20 @@ namespace Core.Domain.ValueObjects
         {
             value = value.ToLowerInvariant();
 
-            Regex regEmail;
-            regEmail = new Regex(@"^[a-z][a-z0-9_]*@[a-z0-9]*\.[a-z]{2,3}$");
             if(string.IsNullOrWhiteSpace(value))
             {
                 throw new Exception($"Email cannot be empty.");
             }
-            else if(!regEmail.IsMatch(value))
-            {
-                throw new Exception($"Wrong email format.");
-            }
             else if(Value == value) return;
 
+            MailAddress m = new MailAddress(value);
+            
             Value = value;
         }
 
         public static Email Create(string value)
             => new Email(value);
+
+        public override string ToString() => Value;
     }
 }

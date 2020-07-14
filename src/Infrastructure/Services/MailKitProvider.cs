@@ -1,8 +1,8 @@
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Application.Services.Interfaces;
+using Core.Domain.ValueObjects;
 using Core.Repositories;
-using Infrastructure.MimeKit;
 using MailKit.Net.Smtp;
 using MimeKit;
 
@@ -10,12 +10,11 @@ namespace Infrastructure.Services
 {
     public class MailKitProvider : IMailKitProvider
     {
-        private readonly IMailKitConfig _mailKitConfig;
+        
         private readonly IEmailSettingsRepository _emailSettingsRepository;
         
-        public MailKitProvider(IMailKitConfig mailKitConfig, IEmailSettingsRepository emailSettingsRepository)
+        public MailKitProvider(IEmailSettingsRepository emailSettingsRepository)
         {
-            _mailKitConfig = mailKitConfig;
             _emailSettingsRepository = emailSettingsRepository;
         }
 
@@ -23,9 +22,9 @@ namespace Infrastructure.Services
         {
             MimeMessage message = new MimeMessage();
 
-            var emailSettings = await _emailSettingsRepository.GetAsync(from);
+            var emailSettings = await _emailSettingsRepository.GetAsync(Email.Create(from));
 
-            message.From.Add(new MailboxAddress(emailSettings.Username, emailSettings.Username));
+            message.From.Add(new MailboxAddress(emailSettings.DisplayName, emailSettings.Email.ToString()));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
             message.Body = new TextPart("plain")
@@ -37,14 +36,23 @@ namespace Infrastructure.Services
             {
                 //poprawić walidację
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                await client.ConnectAsync(emailSettings.Host, emailSettings.Port);
+                await client.ConnectAsync(emailSettings.SmtpHost, emailSettings.SmtpPort);
 
-                await client.AuthenticateAsync(emailSettings.Username, emailSettings.Password);
+                await client.AuthenticateAsync(emailSettings.Email.ToString(), emailSettings.Password);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
-
-            await Task.CompletedTask;
         }
+            public async Task TestConnectionConfiguration(string host, int port, string username, string password)
+            {
+                using(var client = new SmtpClient())
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                    await client.ConnectAsync(host, port);
+                    await client.AuthenticateAsync(username, password);
+                    await client.DisconnectAsync(true);
+                }
+            }
+
     }
-}
+}      

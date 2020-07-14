@@ -2,10 +2,12 @@
 using Application.Services.Interfaces;
 using AutoMapper;
 using Core.Domain.Entities;
+using Core.Domain.ValueObjects;
 using Core.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Application.Services.Implementations
@@ -13,11 +15,13 @@ namespace Application.Services.Implementations
     public class EmailSettingsService : IEmailSettingsService
     {
         private readonly IEmailSettingsRepository _emailSettingsRepository;
+        private readonly IMailKitProvider _mailKitProvider;
         private readonly IMapper _mapper;
 
-        public EmailSettingsService(IEmailSettingsRepository emailSettingsRepository, IMapper mapper)
+        public EmailSettingsService(IEmailSettingsRepository emailSettingsRepository,IMailKitProvider mailKitProvider, IMapper mapper)
         {
             _emailSettingsRepository = emailSettingsRepository;
+            _mailKitProvider = mailKitProvider;
             _mapper = mapper;
         }
 
@@ -27,29 +31,36 @@ namespace Application.Services.Implementations
         public async Task<IEnumerable<EmailSettingsDto>> BrowseAsync()
             => _mapper.Map<IEnumerable<EmailSettingsDto>>(await _emailSettingsRepository.BrowseAsync());
 
-        public async Task CreateAsync(Guid id, string host, int port, string username, string password)
+        public async Task CreateAsync(Guid id, string smtpHost, int smtpPort,string displayName, string email, string password)
         {
-            var user = await _emailSettingsRepository.GetAsync(username);
-           
-            if(user != null)
-            {
-               throw new Exception("Username already exists.");
-            }
+            var emailSettings = await _emailSettingsRepository.GetAsync(Email.Create(email));
+            if(emailSettings != null) throw new Exception("Username already exists.");
 
-            user = new EmailSettings(id,host,port,username,password);
-            await _emailSettingsRepository.AddAsync(user);
+            emailSettings = new EmailSettings(id, smtpHost, smtpPort, displayName, Email.Create(email),password);
+
+            await _mailKitProvider.TestConnectionConfiguration(smtpHost, smtpPort, email, password);
+            await _emailSettingsRepository.AddAsync(emailSettings);
         }
 
-        public async Task UpdateAsync(Guid id, string host, int port, string username, string password)
+        public async Task UpdateAsync(Guid id, string smtpHost, int smtpPort,string displayName, string email, string password)
         {
-            throw new NotImplementedException();
+            var emailSettings = await _emailSettingsRepository.GetAsync(Email.Create(email));
+            if(emailSettings == null) throw new Exception("Email settings does not exist");
+
+            await _mailKitProvider.TestConnectionConfiguration(smtpHost, smtpPort, email, password);
+
+            emailSettings.SetSmtpHost(smtpHost);
+            emailSettings.SetSmtpPort(smtpPort);
+            emailSettings.SetDisplayName(displayName);
+            emailSettings.SetEmail(Email.Create(email));
+            emailSettings.SetPassword(password);
         }
 
         public async Task DeleteAsync(Guid id)
         {
             var user = await _emailSettingsRepository.GetAsync(id);
 
-            if(user == null) throw new Exception("User does not exist");
+            if(user == null) throw new Exception("Email settings does not exist");
 
             await _emailSettingsRepository.RemoveAsync(user);
         }

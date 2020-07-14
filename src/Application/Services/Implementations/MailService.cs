@@ -29,7 +29,7 @@ namespace Application.Services.Implementations
         public async Task SendAsync(Guid id, string from, string to, string subject, string body)
         {
             
-            var email = await _emailSettingsRepository.GetAsync(from);
+            var email = await _emailSettingsRepository.GetAsync(Email.Create(from));
 
             if(email == null)
             {
