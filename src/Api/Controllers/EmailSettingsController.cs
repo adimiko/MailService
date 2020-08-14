@@ -30,7 +30,9 @@ namespace Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Browse()
-            => Json(await _emailSettingsService.BrowseAsync());
+        {
+            return Json(await _emailSettingsService.BrowseAsync());
+        }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateEmailSettings command)
@@ -42,8 +44,9 @@ namespace Api.Controllers
 
         // PUT: api/EmailSettings/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public void Put(Guid id, [FromBody] string value)
         {
+
         }
 
         [HttpDelete("{id}")]

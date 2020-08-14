@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.Interfaces
 {
-    public interface IEmailSettingsService
+    public interface IEmailSettingsService : IService
     {
         public Task<EmailSettingsDetailsDto> GetAsync(Guid id);
         public Task<IEnumerable<EmailSettingsDto>> BrowseAsync();

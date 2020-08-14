@@ -16,12 +16,14 @@ namespace Application.Services.Implementations
     {
         private readonly IEmailSettingsRepository _emailSettingsRepository;
         private readonly IMailKitProvider _mailKitProvider;
+        private readonly IEncrypterProvider _encrypterProvider;
         private readonly IMapper _mapper;
 
-        public EmailSettingsService(IEmailSettingsRepository emailSettingsRepository,IMailKitProvider mailKitProvider, IMapper mapper)
+        public EmailSettingsService(IEmailSettingsRepository emailSettingsRepository,IMailKitProvider mailKitProvider,IEncrypterProvider encrypterProvider, IMapper mapper)
         {
             _emailSettingsRepository = emailSettingsRepository;
             _mailKitProvider = mailKitProvider;
+            _encrypterProvider = encrypterProvider;
             _mapper = mapper;
         }
 
@@ -36,7 +38,9 @@ namespace Application.Services.Implementations
             var emailSettings = await _emailSettingsRepository.GetAsync(Email.Create(email));
             if(emailSettings != null) throw new Exception("Username already exists.");
 
-            emailSettings = new EmailSettings(id, smtpHost, smtpPort, displayName, Email.Create(email),password);
+            var encryptedPassword = await _encrypterProvider.EncryptAsync(password);
+
+            emailSettings = new EmailSettings(id, smtpHost, smtpPort, displayName, Email.Create(email), encryptedPassword);
 
             await _mailKitProvider.TestConnectionConfiguration(smtpHost, smtpPort, email, password);
             await _emailSettingsRepository.AddAsync(emailSettings);
@@ -53,7 +57,9 @@ namespace Application.Services.Implementations
             emailSettings.SetSmtpPort(smtpPort);
             emailSettings.SetDisplayName(displayName);
             emailSettings.SetEmail(Email.Create(email));
-            emailSettings.SetPassword(password);
+
+            var encryptedPassword = await _encrypterProvider.EncryptAsync(password);
+            emailSettings.SetPassword(encryptedPassword);
         }
 
         public async Task DeleteAsync(Guid id)

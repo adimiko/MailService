@@ -2,10 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Framework;
 using Application.Services.Implementations;
 using Application.Services.Interfaces;
+using Autofac;
 using Core.Domain.Entities;
 using Core.Repositories;
+using Infrastructure.EF;
+using Infrastructure.IoC;
 using Infrastructure.Mapper;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -33,14 +37,17 @@ namespace Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddScoped<IMailService, MailService>();
-            services.AddScoped<IEmailSettingsService, EmailSettingsService>();
-            services.AddScoped<IMailRepository, MailRepository>();
-            services.AddScoped<IEmailSettingsRepository,EmailSettingsRepository>();
-            services.AddScoped<IMailKitProvider, MailKitProvider>();
             services.AddSingleton(AutoMapperConfig.Initialize());
+            services.AddEntityFrameworkSqlServer()
+                .AddEntityFrameworkInMemoryDatabase()
+                .AddDbContext<MailServiceContext>();
+
         }
 
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            builder.RegisterModule(new ContainerModule(Configuration));
+        }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -48,13 +55,14 @@ namespace Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthorization();
 
+           //app.UseErrorHandler();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -5,7 +5,7 @@ using Core.Domain.Entities;
 
 namespace Core.Repositories
 {
-    public interface IMailRepository
+    public interface IMailRepository : IRepository
     {
         Task<Mail> GetAsync(Guid id);
         Task<IEnumerable<Mail>> BrowseAsync();

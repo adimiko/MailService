@@ -16,6 +16,16 @@ namespace Api.Controllers
         {
             _mailService = mailService;
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(Guid id)
+         {
+            var mail = await _mailService.GetAsync(id);
+            if(mail == null) return NotFound();
+
+            return Json(mail);
+         }
+
         [HttpGet]
         public async Task<IActionResult> Browse()
             => Json(await _mailService.BrowseAsync());

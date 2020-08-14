@@ -10,8 +10,10 @@ namespace Core.Domain.Entities
         public int SmtpPort {get; protected set;}
         public string DisplayName {get; protected set;}
         public Email Email {get; protected set;}
-        public string Password {get; protected set;} 
+        public string Password {get; protected set;}
 
+
+        protected EmailSettings() {}
         public EmailSettings(Guid id, string smtpHost, int smtpPort, string displayName, Email email, string password)
         {
             SetId(id);
@@ -25,7 +27,16 @@ namespace Core.Domain.Entities
         private void SetId(Guid id)
             => _= id == Guid.Empty ? throw new Exception("Id cannot be empty") : Id = id;
         public void SetSmtpHost(string smtpHost)
-            => _= string.IsNullOrWhiteSpace(smtpHost) ? throw new Exception("Smtp host cannot be null or white space.") : SmtpHost = smtpHost;
+        {
+            if(string.IsNullOrWhiteSpace(smtpHost))
+            {
+                throw new Exception("Smtp host cannot be null or white space.");
+            }
+
+            if(SmtpHost == smtpHost) return;
+
+            SmtpHost = smtpHost;
+        }
 
         public void SetSmtpPort(int smtpPort)
             => _= smtpPort <= 0 ? throw new Exception("Smtp port cannot be equel to or less than zero.") : SmtpPort = smtpPort;

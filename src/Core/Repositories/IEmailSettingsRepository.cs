@@ -6,7 +6,7 @@ using Core.Domain.ValueObjects;
 
 namespace Core.Repositories
 {
-    public interface IEmailSettingsRepository
+    public interface IEmailSettingsRepository : IRepository
     {
         Task<EmailSettings> GetAsync(Guid id);
         Task<EmailSettings> GetAsync(Email email);

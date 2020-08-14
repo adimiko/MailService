@@ -10,21 +10,16 @@ namespace Infrastructure.Services
 {
     public class MailKitProvider : IMailKitProvider
     {
-        
-        private readonly IEmailSettingsRepository _emailSettingsRepository;
-        
-        public MailKitProvider(IEmailSettingsRepository emailSettingsRepository)
+        public MailKitProvider()
         {
-            _emailSettingsRepository = emailSettingsRepository;
+
         }
 
-        public async Task SendAsync(string from, string to, string subject, string body)
+        public async Task SendAsync(string smtpHost, int smtpPort,string displayName, string email, string password, string to, string subject, string body)
         {
             MimeMessage message = new MimeMessage();
 
-            var emailSettings = await _emailSettingsRepository.GetAsync(Email.Create(from));
-
-            message.From.Add(new MailboxAddress(emailSettings.DisplayName, emailSettings.Email.ToString()));
+            message.From.Add(new MailboxAddress(displayName, email));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
             message.Body = new TextPart("plain")
@@ -36,20 +31,20 @@ namespace Infrastructure.Services
             {
                 //poprawić walidację
                 client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                await client.ConnectAsync(emailSettings.SmtpHost, emailSettings.SmtpPort);
+                await client.ConnectAsync(smtpHost, smtpPort);
 
-                await client.AuthenticateAsync(emailSettings.Email.ToString(), emailSettings.Password);
+                await client.AuthenticateAsync(email, password);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
         }
-            public async Task TestConnectionConfiguration(string host, int port, string username, string password)
+            public async Task TestConnectionConfiguration(string host, int port, string email, string password)
             {
                 using(var client = new SmtpClient())
                 {
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
                     await client.ConnectAsync(host, port);
-                    await client.AuthenticateAsync(username, password);
+                    await client.AuthenticateAsync(email, password);
                     await client.DisconnectAsync(true);
                 }
             }

@@ -14,6 +14,9 @@ namespace Infrastructure.Mapper
             {
                 cfg.CreateMap<EmailSettings, EmailSettingsDto>();
                 cfg.CreateMap<EmailSettings, EmailSettingsDetailsDto>();
+                cfg.CreateMap<Mail, MailDto>()
+                .ForMember(d => d.From, s => s.MapFrom(s => s.From.Value))
+                .ForMember(d => d.To, s => s.MapFrom(s => s.To.Value));
             }).CreateMapper();
     }
 }

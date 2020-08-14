@@ -6,7 +6,7 @@ namespace Core.Domain.ValueObjects
 {
     public class Email
     {
-        protected string Value {get;  set;}
+        public string Value {get;  set;}
         protected Email(){}
         protected Email(string value)
         {
